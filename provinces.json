@@ -1,0 +1,123 @@
+{
+  "provinces": [
+    {
+      "code": "BGD",
+      "name_ar": "بغداد",
+      "name_en": "Baghdad",
+      "base_fee": 4000,
+      "active": true
+    },
+    {
+      "code": "BAS",
+      "name_ar": "البصرة",
+      "name_en": "Basra",
+      "base_fee": 6000,
+      "active": true
+    },
+    {
+      "code": "NIN",
+      "name_ar": "نينوى",
+      "name_en": "Nineveh",
+      "base_fee": 6000,
+      "active": true
+    },
+    {
+      "code": "ARB",
+      "name_ar": "أربيل",
+      "name_en": "Erbil",
+      "base_fee": 6500,
+      "active": true
+    },
+    {
+      "code": "SUL",
+      "name_ar": "السليمانية",
+      "name_en": "Sulaymaniyah",
+      "base_fee": 6500,
+      "active": true
+    },
+    {
+      "code": "NAJ",
+      "name_ar": "النجف",
+      "name_en": "Najaf",
+      "base_fee": 5000,
+      "active": true
+    },
+    {
+      "code": "KRB",
+      "name_ar": "كربلاء",
+      "name_en": "Karbala",
+      "base_fee": 5000,
+      "active": true
+    },
+    {
+      "code": "DIA",
+      "name_ar": "ديالى",
+      "name_en": "Diyala",
+      "base_fee": 5000,
+      "active": true
+    },
+    {
+      "code": "QAD",
+      "name_ar": "القادسية",
+      "name_en": "Al-Qadisiyyah",
+      "base_fee": 5500,
+      "active": true
+    },
+    {
+      "code": "DHI",
+      "name_ar": "ذي قار",
+      "name_en": "Dhi Qar",
+      "base_fee": 5500,
+      "active": true
+    },
+    {
+      "code": "WAS",
+      "name_ar": "واسط",
+      "name_en": "Wasit",
+      "base_fee": 5000,
+      "active": true
+    },
+    {
+      "code": "MSN",
+      "name_ar": "المثنى",
+      "name_en": "Muthanna",
+      "base_fee": 5500,
+      "active": true
+    },
+    {
+      "code": "MYS",
+      "name_ar": "ميسان",
+      "name_en": "Maysan",
+      "base_fee": 5500,
+      "active": true
+    },
+    {
+      "code": "SAL",
+      "name_ar": "صلاح الدين",
+      "name_en": "Salah al-Din",
+      "base_fee": 5500,
+      "active": true
+    },
+    {
+      "code": "BBL",
+      "name_ar": "بابل",
+      "name_en": "Babil",
+      "base_fee": 5000,
+      "active": true
+    },
+    {
+      "code": "ANK",
+      "name_ar": "الأنبار",
+      "name_en": "Anbar",
+      "base_fee": 6500,
+      "active": true
+    },
+    {
+      "code": "KIR",
+      "name_ar": "كركوك",
+      "name_en": "Kirkuk",
+      "base_fee": 6000,
+      "active": true
+    }
+  ]
+}
