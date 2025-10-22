@@ -23,16 +23,15 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: "stable"
-          flutter-version: "3.24.0"   # خليها ثابتة
+          flutter-version: "3.24.0"
 
-      # لو ما عندك مجلد android/ بالمشروع، هذا يولّده بدون ما يلمس lib/pubspec
-      - name: Ensure platforms created
-        run: flutter create .
-
-      - name: Get packages
+      - name: Get dependencies
         run: flutter pub get
 
-      # إبني APK موقّع debug (ينتنصب مباشرة)
+      # ✨ هذه الخطوة تولّد مجلد android تلقائياً لو مفقود
+      - name: Create Android folder if missing
+        run: flutter create .
+
       - name: Build debug APK
         run: flutter build apk --debug
 
