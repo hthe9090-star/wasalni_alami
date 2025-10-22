@@ -1,36 +1,41 @@
-name: Build APK (Flutter Debug)
-
+name: build-android
 on:
   workflow_dispatch:
-  push:
-    branches: [ main ]
 
 jobs:
-  build-android:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: '17'
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: "stable"
-          flutter-version: "3.24.0"
+          channel: stable
 
-      - name: Get dependencies
+      - name: Get packages
         run: flutter pub get
 
-      # ✨ هذه الخطوة تولّد مجلد android تلقائياً لو مفقود
-      - name: Create Android folder if missing
-        run: flutter create .
+      # يولّد منصة أندرويد إذا مفقودة (مشروع Gradle كامل ومدعوم)
+      - name: Create Android platform if missing
+        run: |
+          if [ ! -d "android" ]; then
+            flutter create . --platforms=android
+          fi
+
+      # نرفع أرقام الـ SDK (احتياط)
+      - name: Ensure compile/target SDK 34
+        run: |
+          sed -i 's/compileSdkVersion \+[0-9]\+/compileSdkVersion 34/' android/app/build.gradle || true
+          sed -i 's/targetSdkVersion \+[0-9]\+/targetSdkVersion 34/' android/app/build.gradle || true
 
       - name: Build debug APK
         run: flutter build apk --debug
@@ -38,5 +43,5 @@ jobs:
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug-apk
+          name: app-debug.apk
           path: build/app/outputs/flutter-apk/app-debug.apk
