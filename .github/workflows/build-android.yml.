@@ -1,0 +1,48 @@
+name: build-android
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Get packages
+        run: flutter pub get
+
+      # يولّد مشروع Android إذا مو موجود
+      - name: Create Android platform if missing
+        run: |
+          if [ ! -d "android" ]; then
+            flutter create . --org com.waslnialami --project-name wasalni_alami --platforms=android
+          fi
+
+      # نضمن قيم SDK حتى ما يطيح البناء
+      - name: Ensure Android SDK versions
+        run: |
+          sed -i 's/compileSdkVersion *[0-9]\+/compileSdkVersion 34/' android/app/build.gradle || true
+          sed -i 's/targetSdkVersion *[0-9]\+/targetSdkVersion 34/'   android/app/build.gradle || true
+          sed -i 's/minSdkVersion *[0-9]\+/minSdkVersion 21/'         android/app/build.gradle || true
+
+      - name: Build debug APK
+        run: flutter build apk --debug --no-tree-shake-icons
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug.apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
