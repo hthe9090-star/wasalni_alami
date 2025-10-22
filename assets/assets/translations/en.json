@@ -1,0 +1,21 @@
+{
+  "app_title": "Wasalni Alami",
+  "tagline": "Delivery across all Iraqi provinces",
+  "login": "Login",
+  "signup": "Sign up",
+  "guest": "Continue as Guest",
+  "customer": "Customer",
+  "admin": "Admin",
+  "courier": "Courier",
+  "staff": "Staff",
+  "support": "Support",
+  "new_order": "New Delivery Request",
+  "track_order": "Track Order",
+  "cash": "Cash",
+  "card": "Electronic Payment",
+  "province": "Province",
+  "city": "City",
+  "address": "Address",
+  "confirm": "Confirm",
+  "cancel": "Cancel"
+}
