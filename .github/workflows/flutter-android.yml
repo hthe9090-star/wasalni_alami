@@ -20,22 +20,29 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: '3.x'   # خليه على آخر Stable تلقائياً
 
       - name: Get packages
         run: flutter pub get
 
-      # يولّد منصة أندرويد إذا مفقودة (مشروع Gradle كامل ومدعوم)
+      # يولّد منصة أندرويد إذا مفقودة
       - name: Create Android platform if missing
         run: |
           if [ ! -d "android" ]; then
             flutter create . --platforms=android
           fi
 
-      # نرفع أرقام الـ SDK (احتياط)
+      # تأكيد وجود compileSdk (يتعامل ويا الصيغتين: compileSdkVersion أو compileSdk)
       - name: Ensure compile/target SDK 34
         run: |
-          sed -i 's/compileSdkVersion \+[0-9]\+/compileSdkVersion 34/' android/app/build.gradle || true
-          sed -i 's/targetSdkVersion \+[0-9]\+/targetSdkVersion 34/' android/app/build.gradle || true
+          if [ -f android/app/build.gradle ]; then
+            # استبدال compileSdkVersion إن وجد
+            sed -i 's/compileSdkVersion \+[0-9]\+/compileSdkVersion 34/g' android/app/build.gradle || true
+            # أو إذا الصيغة الحديثة موجودة (compileSdk)
+            sed -i 's/compileSdk \+[0-9]\+/compileSdk 34/g' android/app/build.gradle || true
+            # targetSdkVersion
+            sed -i 's/targetSdkVersion \+[0-9]\+/targetSdkVersion 34/g' android/app/build.gradle || true
+          fi
 
       - name: Build debug APK
         run: flutter build apk --debug
