@@ -1,0 +1,35 @@
+name: wasalni_alami
+description: "وصلني عالمي – شركة توصيل لجميع محافظات العراق (نسخة تجريبية)"
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+  provider: ^6.1.2
+  shared_preferences: ^2.2.3
+  intl: ^0.19.0
+  flutter_svg: ^2.0.10+1
+  google_fonts: ^6.2.1
+  url_launcher: ^6.3.0
+  http: ^1.2.2
+  geolocator: ^12.0.0
+  geocoding: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/config/
+    - assets/translations/
+  fonts:
+    - family: NotoKufiArabic
+      fonts:
+        - asset: assets/fonts/NotoKufiArabic-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/NotoKufiArabic-Bold.ttf
+          weight: 700
