@@ -34,16 +34,11 @@ jobs:
       - name: Patch Android SDK versions
         run: |
           FILE=android/app/build.gradle
-          echo "---- BEFORE ----"
-          cat $FILE || true
-          echo "----------------"
 
-          # حاول تحديث القيم إذا موجودة
           sed -i 's/compileSdkVersion \+[0-9]\+/compileSdkVersion 34/' "$FILE" || true
           sed -i 's/targetSdkVersion \+[0-9]\+/targetSdkVersion 34/' "$FILE" || true
           sed -i 's/minSdkVersion \+[0-9]\+/minSdkVersion 21/' "$FILE" || true
 
-          # إذا ماكو compileSdkVersion أبد، نضيف بلوك android كامل بآخر الملف
           if ! grep -q "compileSdkVersion" "$FILE"; then
             cat >> "$FILE" << 'EOF'
 android {
@@ -60,10 +55,6 @@ android {
 }
 EOF
           fi
-
-          echo "---- AFTER ----"
-          cat $FILE || true
-          echo "----------------"
 
       - name: Build debug APK
         run: flutter build apk --debug --no-tree-shake-icons
