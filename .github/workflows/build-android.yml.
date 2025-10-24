@@ -7,46 +7,70 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. نسحب الكود من الفرع main
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2. نثبت Java 17 (Gradle يحتاجها)
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
-      # 3. نثبت Flutter
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
 
-      # 4. نجيب البكجات من pubspec.yaml
       - name: Get packages
         run: flutter pub get
 
-      # 5. نولّد مشروع مؤقت حتى ناخذ منه فولدر android رسمي
-      - name: Generate clean Android project
+      # إذا ماكو مجلد android نسويه
+      - name: Create Android platform if missing
         run: |
-          flutter create temp_app --org com.waslnialami --project-name wasalni_alami --platforms=android
-          rm -rf android
-          mv temp_app/android ./android
+          if [ ! -d "android" ]; then
+            flutter create . --org com.waslnialami --project-name wasalni_alami --platforms=android
+          fi
 
-      # 6. نرفع إصدارات الـ SDK داخل build.gradle
-      - name: Patch SDK versions
+      # نفرض إعدادات Gradle و SDK حتى الإضافات (مثل geolocator_android) لا تبجي
+      - name: Patch Android Gradle config
         run: |
-          sed -i 's/compileSdkVersion [0-9][0-9]/compileSdkVersion 34/' android/app/build.gradle || true
-          sed -i 's/targetSdkVersion [0-9][0-9]/targetSdkVersion 34/'   android/app/build.gradle || true
-          sed -i 's/minSdkVersion [0-9][0-9]/minSdkVersion 21/'         android/app/build.gradle || true
+          # نتأكد من compileSdkVersion / minSdkVersion / targetSdkVersion
+          sed -i 's/compileSdkVersion [0-9]\+/compileSdkVersion 34/' android/app/build.gradle || true
+          sed -i 's/targetSdkVersion [0-9]\+/targetSdkVersion 34/' android/app/build.gradle || true
 
-      # 7. نبني APK (وضع debug)
+          # إذا ما لقاهم (بعض القوالب الجديدة صارت تستخدم namespace و android { compileSdk  } بشكل مختلف)
+          # نضيف بلوك android كامل مضبوط
+          if ! grep -q "compileSdkVersion" android/app/build.gradle; then
+            cat >> android/app/build.gradle << 'EOF'
+
+android {
+    compileSdkVersion 34
+
+    defaultConfig {
+        applicationId "com.waslnialami.wasalni_alami"
+        minSdkVersion 21
+        targetSdkVersion 34
+        versionCode 1
+        versionName "1.0"
+    }
+}
+EOF
+          fi
+
+          # نعدّل android/build.gradle (الملف العلوي) حتى يشتغل مع Gradle الحديث
+          if [ -f android/build.gradle ]; then
+            sed -i 's/classpath "com.android.tools.build:gradle:[^"]*"/classpath "com.android.tools.build:gradle:8.1.4"/' android/build.gradle || true
+          fi
+
+          # نضبط gradle-wrapper.properties حتى يستخدم Gradle 8
+          if [ -f android/gradle/wrapper/gradle-wrapper.properties ]; then
+            sed -i 's/distributionUrl=.*/distributionUrl=https\:\/\/services.gradle.org\/distributions\/gradle-8.4-bin.zip/' android/gradle/wrapper/gradle-wrapper.properties || true
+          fi
+
+      # Build APK (debug)
       - name: Build debug APK
         run: flutter build apk --debug --no-tree-shake-icons
 
-      # 8. نرفع الـ APK كملف جاهز للتحميل من Actions
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
