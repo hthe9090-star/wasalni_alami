@@ -7,40 +7,46 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. نسحب الكود من الفرع main
       - name: Checkout
         uses: actions/checkout@v4
 
+      # 2. نثبت Java 17 (Gradle يحتاجها)
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
+      # 3. نثبت Flutter
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
 
+      # 4. نجيب البكجات من pubspec.yaml
       - name: Get packages
         run: flutter pub get
 
-      # يولّد مشروع Android إذا مو موجود
-      - name: Create Android platform if missing
+      # 5. نولّد مشروع مؤقت حتى ناخذ منه فولدر android رسمي
+      - name: Generate clean Android project
         run: |
-          if [ ! -d "android" ]; then
-            flutter create . --org com.waslnialami --project-name wasalni_alami --platforms=android
-          fi
+          flutter create temp_app --org com.waslnialami --project-name wasalni_alami --platforms=android
+          rm -rf android
+          mv temp_app/android ./android
 
-      # نضمن قيم SDK حتى ما يطيح البناء
-      - name: Ensure Android SDK versions
+      # 6. نرفع إصدارات الـ SDK داخل build.gradle
+      - name: Patch SDK versions
         run: |
-          sed -i 's/compileSdkVersion *[0-9]\+/compileSdkVersion 34/' android/app/build.gradle || true
-          sed -i 's/targetSdkVersion *[0-9]\+/targetSdkVersion 34/'   android/app/build.gradle || true
-          sed -i 's/minSdkVersion *[0-9]\+/minSdkVersion 21/'         android/app/build.gradle || true
+          sed -i 's/compileSdkVersion [0-9][0-9]/compileSdkVersion 34/' android/app/build.gradle || true
+          sed -i 's/targetSdkVersion [0-9][0-9]/targetSdkVersion 34/'   android/app/build.gradle || true
+          sed -i 's/minSdkVersion [0-9][0-9]/minSdkVersion 21/'         android/app/build.gradle || true
 
+      # 7. نبني APK (وضع debug)
       - name: Build debug APK
         run: flutter build apk --debug --no-tree-shake-icons
 
+      # 8. نرفع الـ APK كملف جاهز للتحميل من Actions
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
