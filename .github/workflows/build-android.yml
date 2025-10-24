@@ -32,6 +32,70 @@ jobs:
 
       - name: Build debug APK
         run: flutter build apk --debug --no-tree-shake-icons
+name: build-android
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Get packages
+        run: flutter pub get
+
+      - name: Create Android platform if missing
+        run: |
+          if [ ! -d "android" ]; then
+            flutter create . --org com.wasalnialami.wasalni_alami --project-name wasalni_alami --platforms=android
+          fi
+
+      - name: Patch Android SDK versions
+        run: |
+          FILE=android/app/build.gradle
+          echo "---- BEFORE ----"
+          cat $FILE || true
+          echo "----------------"
+
+          # حاول تحديث القيم
+          sed -i 's/compileSdkVersion \+[0-9]\+/compileSdkVersion 34/' $FILE || true
+          sed -i 's/targetSdkVersion \+[0-9]\+/targetSdkVersion 34/' $FILE || true
+          sed -i 's/minSdkVersion \+[0-9]\+/minSdkVersion 21/' $FILE || true
+
+          # إذا ماكو compileSdkVersion، نضيف بلوك كامل
+          if ! grep -q "compileSdkVersion" $FILE; then
+            cat >> $FILE << 'EOF'
+android {
+    namespace "com.wasalnialami.wasalni_alami"
+    compileSdkVersion 34
+
+    defaultConfig {
+        applicationId "com.wasalnialami.wasalni_alami"
+        minSdkVersion 21
+        targetSdkVersion 34
+        versionCode 1
+        versionName "1.0"
+    }
+}
+EOF
+          fi
+
+      - name: Build debug APK
+        run: flutter build apk --debug --no-tree-shake-icons
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
