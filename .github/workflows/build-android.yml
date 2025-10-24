@@ -35,10 +35,12 @@ jobs:
         run: |
           FILE=android/app/build.gradle
 
+          # حاول نحدّث القيم إذا موجودة
           sed -i 's/compileSdkVersion \+[0-9]\+/compileSdkVersion 34/' "$FILE" || true
           sed -i 's/targetSdkVersion \+[0-9]\+/targetSdkVersion 34/' "$FILE" || true
           sed -i 's/minSdkVersion \+[0-9]\+/minSdkVersion 21/' "$FILE" || true
 
+          # إذا build.gradle ما بي compileSdkVersion اصلاً، نضيف بلوك كامل
           if ! grep -q "compileSdkVersion" "$FILE"; then
             cat >> "$FILE" << 'EOF'
 android {
