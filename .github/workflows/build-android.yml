@@ -14,7 +14,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: "17"
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -24,28 +24,49 @@ jobs:
       - name: Get packages
         run: flutter pub get
 
+      # Create android/ if it's missing
       - name: Create Android platform if missing
         run: |
           if [ ! -d "android" ]; then
-            flutter create . --org com.waslni.alami --project-name wasalni_alami --platforms=android
+            flutter create . --org com.wasalni.alami --project-name wasalni_alami --platforms=android
           fi
 
+      # Force SDK versions in android/app/build.gradle
       - name: Patch Android SDK versions
         run: |
           FILE=android/app/build.gradle
-          echo "----- build.gradle before ----"
-          cat $FILE || true
-          echo "------------------------------"
 
-          if grep -q "android {" $FILE; then
-            sed -i '/android {/a \    compileSdkVersion 34' $FILE
-            sed -i 's/minSdkVersion [0-9][0-9]*/minSdkVersion 21/' $FILE
-            sed -i 's/targetSdkVersion [0-9][0-9]*/targetSdkVersion 34/' $FILE
+          echo "---- BEFORE ----"
+          cat $FILE || true
+          echo "----------------"
+
+          # try to update existing values
+          sed -i 's/compileSdkVersion \+[0-9][0-9]*/compileSdkVersion 34/' $FILE || true
+          sed -i 's/targetSdkVersion \+[0-9][0-9]*/targetSdkVersion 34/' $FILE || true
+          sed -i 's/minSdkVersion \+[0-9][0-9]*/minSdkVersion 21/' $FILE || true
+
+          # if compileSdkVersion still not found, append a minimal android block
+          if ! grep -q "compileSdkVersion" $FILE; then
+            cat >> $FILE << 'EOF'
+
+android {
+    namespace "com.wasalnialami.wasalni_alami"
+    compileSdkVersion 34
+
+    defaultConfig {
+        applicationId "com.wasalnialami.wasalni_alami"
+        minSdkVersion 21
+        targetSdkVersion 34
+        versionCode 1
+        versionName "1.0"
+    }
+}
+EOF
           fi
 
-          echo "----- build.gradle after ----"
+          echo "---- AFTER ----"
           cat $FILE || true
-          echo "-----------------------------"
+          echo "---------------"
 
       - name: Build debug APK
         run: flutter build apk --debug --no-tree-shake-icons
@@ -55,4 +76,3 @@ jobs:
         with:
           name: app-debug.apk
           path: build/app/outputs/flutter-apk/app-debug.apk
-          
