@@ -24,50 +24,29 @@ jobs:
       - name: Get packages
         run: flutter pub get
 
-      # إذا ماكو مجلد android نسويه
       - name: Create Android platform if missing
         run: |
           if [ ! -d "android" ]; then
-            flutter create . --org com.waslnialami --project-name wasalni_alami --platforms=android
+            flutter create . --org com.waslni.alami --project-name wasalni_alami --platforms=android
           fi
 
-      # نفرض إعدادات Gradle و SDK حتى الإضافات (مثل geolocator_android) لا تبجي
-      - name: Patch Android Gradle config
+      - name: Patch Android SDK versions
         run: |
-          # نتأكد من compileSdkVersion / minSdkVersion / targetSdkVersion
-          sed -i 's/compileSdkVersion [0-9]\+/compileSdkVersion 34/' android/app/build.gradle || true
-          sed -i 's/targetSdkVersion [0-9]\+/targetSdkVersion 34/' android/app/build.gradle || true
+          FILE=android/app/build.gradle
+          echo "----- build.gradle before ----"
+          cat $FILE || true
+          echo "------------------------------"
 
-          # إذا ما لقاهم (بعض القوالب الجديدة صارت تستخدم namespace و android { compileSdk  } بشكل مختلف)
-          # نضيف بلوك android كامل مضبوط
-          if ! grep -q "compileSdkVersion" android/app/build.gradle; then
-            cat >> android/app/build.gradle << 'EOF'
-
-android {
-    compileSdkVersion 34
-
-    defaultConfig {
-        applicationId "com.waslnialami.wasalni_alami"
-        minSdkVersion 21
-        targetSdkVersion 34
-        versionCode 1
-        versionName "1.0"
-    }
-}
-EOF
+          if grep -q "android {" $FILE; then
+            sed -i '/android {/a \    compileSdkVersion 34' $FILE
+            sed -i 's/minSdkVersion [0-9][0-9]*/minSdkVersion 21/' $FILE
+            sed -i 's/targetSdkVersion [0-9][0-9]*/targetSdkVersion 34/' $FILE
           fi
 
-          # نعدّل android/build.gradle (الملف العلوي) حتى يشتغل مع Gradle الحديث
-          if [ -f android/build.gradle ]; then
-            sed -i 's/classpath "com.android.tools.build:gradle:[^"]*"/classpath "com.android.tools.build:gradle:8.1.4"/' android/build.gradle || true
-          fi
+          echo "----- build.gradle after ----"
+          cat $FILE || true
+          echo "-----------------------------"
 
-          # نضبط gradle-wrapper.properties حتى يستخدم Gradle 8
-          if [ -f android/gradle/wrapper/gradle-wrapper.properties ]; then
-            sed -i 's/distributionUrl=.*/distributionUrl=https\:\/\/services.gradle.org\/distributions\/gradle-8.4-bin.zip/' android/gradle/wrapper/gradle-wrapper.properties || true
-          fi
-
-      # Build APK (debug)
       - name: Build debug APK
         run: flutter build apk --debug --no-tree-shake-icons
 
@@ -76,3 +55,4 @@ EOF
         with:
           name: app-debug.apk
           path: build/app/outputs/flutter-apk/app-debug.apk
+          
