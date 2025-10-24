@@ -32,6 +32,7 @@ jobs:
 
       - name: Build debug APK
         run: flutter build apk --debug --no-tree-shake-icons
+
 - name: Patch Android SDK versions
         run: |
           FILE=android/app/build.gradle
