@@ -1,4 +1,5 @@
 name: build-android
+
 on:
   workflow_dispatch:
 
@@ -7,68 +8,59 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. نسحب السورس من الريبو
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      # 2. نثبت Java 17 (مطلوبة للـ Gradle الحديث)
       - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
+      # 3. نثبت Flutter
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
 
+      # 4. pub get
       - name: Flutter pub get
         run: flutter pub get
 
+      # 5. نتأكد إنو مجلد android موجود (إذا ما موجود ننشئه)
       - name: Ensure android/ exists
         run: |
           if [ ! -d "android" ]; then
             flutter create . --platforms=android --org com.wasalni.alami --project-name wasalni_alami
           fi
 
+      # 6. نضمن أرقام الـ SDK بالـ build.gradle (compile/target/min)
       - name: Force SDK versions
         run: |
           FILE=android/app/build.gradle
+
           echo "----- BEFORE -----"
           cat "$FILE" || true
           echo "------------------"
 
+          # حدّث compileSdkVersion / targetSdkVersion / minSdkVersion إذا موجودة
           sed -i 's/compileSdkVersion \+[0-9][0-9]*/compileSdkVersion 34/' "$FILE" || true
           sed -i 's/targetSdkVersion \+[0-9][0-9]*/targetSdkVersion 34/' "$FILE" || true
           sed -i 's/minSdkVersion \+[0-9][0-9]*/minSdkVersion 21/' "$FILE" || true
 
-          echo "----- AFTER ------"
+          echo "----- AFTER -----"
           cat "$FILE" || true
-          echo "------------------"
+          echo "-----------------"
 
+      # 7. نبني APK (debug)
       - name: Build debug APK
         run: flutter build apk --debug --no-tree-shake-icons
 
+      # 8. نرفع الـ APK الناتج حتى تكدر تنزله من صفحة الـ Actions
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-debug.apk
-          path: build/app/outputs/flutter-apk/app-debug.apk            cat "$FILE" || true
-            echo "------------------"
-
-            # حاول عدّل اذا السطور موجودة
-            sed -i 's/compileSdkVersion \+[0-9][0-9]*/compileSdkVersion 34/' "$FILE" || true
-            sed -i 's/targetSdkVersion \+[0-9][0-9]*/targetSdkVersion 34/' "$FILE" || true
-            sed -i 's/minSdkVersion \+[0-9][0-9]*/minSdkVersion 21/' "$FILE" || true
-
-            echo "----- AFTER ------"
-            cat "$FILE" || true
-            echo "------------------"
-
-      - name: Build debug APK
-        run: flutter build apk --debug --no-tree-shake-icons
-
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
-        with:
-            name: app-debug.apk
-            path: build/app/outputs/flutter-apk/app-debug.apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
